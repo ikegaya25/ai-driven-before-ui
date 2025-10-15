@@ -1,18 +1,24 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)'])
+// 認証が必要なルートを定義
+const isProtectedRoute = createRouteMatcher([
+  '/posts/new(.*)',
+  '/posts/(.*)/edit(.*)',
+  '/api/blog(.*)',
+]);
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect()
+export default clerkMiddleware((auth, req) => {
+  // 保護されたルートで認証をチェック
+  if (isProtectedRoute(req)) {
+    auth().protect();
   }
-})
+});
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
+    // すべてのルートでClerkを実行
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
+    // APIルート
     '/(api|trpc)(.*)',
   ],
-}
+};

@@ -14,9 +14,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id String @id @default(uuid())
+  clerkId String @unique
+  email String @unique
+  firstName String?
+  lastName String?
+  imageUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts Post[]
+  favorites PostFavorite[]
+}
+
 model Post {
   id Int @id @default(autoincrement())
   title String
   description String
   date DateTime @default(now())
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  imageUrl String?
+  favorites PostFavorite[]
+  categories PostCategory[]
+}
+
+model PostFavorite {
+  id String @id @default(uuid())
+  userId String
+  postId Int
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, postId])
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+  posts PostCategory[]
+  createdAt DateTime @default(now())
+}
+
+model PostCategory {
+  id String @id @default(uuid())
+  postId Int
+  categoryId String
+  post Post @relation(fields: [postId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  
+  @@unique([postId, categoryId])
 }
